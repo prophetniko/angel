@@ -1,7 +1,7 @@
-import std/terminal, strutils
+import std/terminal, strutils, strformat, uri
 
 proc banner() =
-    stdout.styledWriteLine(fgCyan, """                                           
+    stdout.styledWriteLine(fgYellow, """                                           
                                         ████ 
                                        ░░███ 
   ██████   ████████    ███████  ██████  ░███ 
@@ -24,6 +24,15 @@ proc commandHelp() =
 proc commandExit() =
     stdout.styledWriteLine(fgYellow, "exiting angel, happy hunting!")
     quit(0)
+
+proc isValidUrl(url: string): bool =
+  let parsed = parseUri(url)
+  return not parsed.scheme.isEmptyOrWhitespace() and 
+         not parsed.hostname.isEmptyOrWhitespace()    
+
+proc collectPages(url: string) =
+    if not isValidUrl(url):
+        stdout.styledWriteLine(fgRed, &"Invalid URL structure \"{url}\"")
 
 proc startup() =
     hideCursor()
@@ -51,17 +60,16 @@ proc repl() =
 
     let cmd = parts[0].toLowerAscii()
 
-    if input == nil or endOfFile(stdin)
-        commandExit()
-        break
-
     case cmd
     of "help":
       commandHelp()
+    of "collect":
+        echo "this is a temp command, remove later"
+        collectPages(parts[1])
     of "exit", "quit", "q":
       commandExit()
     else:
-      stdout.styledWriteLine(fgRed, "unknown command: ", cmd)
+      stdout.styledWriteLine(fgRed, &"unknown command \"{cmd}\"")
 
     
 proc ctrlc() {.noconv.} =
